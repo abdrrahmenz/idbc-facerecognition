@@ -1,21 +1,44 @@
-FROM python:3.11-slim
+FROM ubuntu:22.04
 
 WORKDIR /app
 
-# Install system dependencies
+# Install Python dan dependencies
 RUN apt-get update && apt-get install -y \
+    python3.11 \
+    python3-pip \
+    python3.11-dev \
+    libgl1-mesa-glx \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
     libxrender-dev \
     libgomp1 \
+    libgtk-3-0 \
+    libgdk-pixbuf2.0-0 \
+    libxss1 \
+    libgconf-2-4 \
+    libxtst6 \
+    libxrandr2 \
+    libasound2 \
+    libpangocairo-1.0-0 \
+    libatk1.0-0 \
+    libcairo-gobject2 \
+    ffmpeg \
+    libavcodec58 \
+    libavformat58 \
     wget \
-    curl \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies
+# Set Python3 as default
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Copy requirements
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir --upgrade pip
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy application
 COPY app.py .
@@ -32,6 +55,11 @@ RUN echo "Downloading model..." && \
 
 # Verify model file is not empty
 RUN test -s r100.onnx || (echo "Model file is empty!" && exit 1)
+
+# Environment variables
+ENV DISPLAY=:99
+ENV QT_X11_NO_MITSHM=1
+
 
 EXPOSE 8000
 
