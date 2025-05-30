@@ -2,14 +2,24 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy files
-COPY requirements.txt app.py ./
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+# Copy and install Python dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# For testing - create dummy model file
-RUN echo "dummy model file for testing" > r100.onnx
+# Copy application
+COPY app.py .
+
+# Create placeholder for model (akan diupload manual nanti)
+RUN touch r100.onnx
 
 EXPOSE 8000
 
